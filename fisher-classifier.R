@@ -236,11 +236,32 @@ w.node.matrix = w.node.matrix[2:27,1:1]
 w.node.matrix = as.matrix(w.node.matrix) # dim( 26 x 1 )
 # ---------------------------------------------------------------------
 # ======================= Lets Start Testing ==========================
-
-
-
-
-
+max.index.classfier = matrix(0,52,1) # initiat empty lables results for each image
+# loop on testing images
+for (t in 1:52)
+{
+  classifiers.matrix = matrix(0,1,1) # initiat empty matric dim (26 x 1) carries y(x)
+  curr.x = testing.features[t:t , 1:144] # dim(1 x 144)
+  curr.x = t(curr.x) # dim(144 x 1)
+  for (c in 1:26)
+  {
+    curr.w = w.matrix[c:c ,1:144] # get current classifier w ### dim(1 x 144)
+    curr.w.node = w.node.matrix[c:c ,1:1] # get current classifier w.node ### dim(1 x 1)
+    y.lable = (t(as.matrix(curr.w)) %*% t(curr.x) ) + curr.w.node ### dim(1 x 1)
+    classifiers.matrix = rbind(classifiers.matrix ,as.double(y.lable)) 
+  }
+  #remove 1st row 
+  classifiers.matrix = as.matrix(classifiers.matrix[2:27 , 1:1])
+  # keep index of max value
+  # helper link
+  # http://stackoverflow.com/questions/17606906/find-row-and-column-index-of-maximum-value-in-a-matrix
+  #------------------------------------------
+  max.ind = which(classifiers.matrix == max(classifiers.matrix), arr.ind = TRUE)
+  max.index.classfier[t,1] = max.ind[[1]] 
+}
+# =============== Plot Max index value ===========
+#Plot accurecy Matrix
+plot(xlim = c(1,26),ylim= c(1,26),max.index.classfier[1:26,1], col = "blue", cex = .6)
 
 
 
