@@ -107,11 +107,11 @@ mean.class <- function(class.matrix , class.no)
 #-------------------------------------------------------------------------------
 # ============= Build big loop to make 26 mean 1 and 2 ======================
 #-------------------------------------------------------------------------------
-big.m1 = matrix(0,1,144) # main mean matrix of 26 m1 for each classifier
-big.m2 = matrix(0,1,144) # main mean matrix of 26 m2 for each classifier
+w.matrix = matrix(0,1,144) # main W matrix of 26 for each classifier in row
+w.node.matrix = matrix(0,1,1) # main W node column of 26 value for each classifier in row
+# loop 26 time to make 26 classifier for characters
 for (curr.indx in 1:26)
 { 
-  # loop 26 time to make 26 classifier for characters
   # ----------- make class one subset --------------
   # start from ([currIndex-1]*7)+1 to currIndex*7 
   start.index = ((curr.indx-1)*7)+1
@@ -143,14 +143,67 @@ for (curr.indx in 1:26)
   #--------------- calculate m1 , m2 -------------------
   m1 = mean.class(class.one , n1)
   m2 = mean.class(class.two , n2)
-  # -------------- Append means to big mean matrices -----------------
-  big.m1 = rbind(big.m1 , as.double(m1))
-  big.m2 = rbind(big.m2 , as.double(m2))
-}
-# Remove initial row in big mean matricies
-big.m1 = big.m1[2:27 , 1:144 ]
-big.m2 = big.m2[2:27 , 1:144 ]
-# --------------------------------------------------------------------
+  # -------------- CALCULATE Sw FROME MEAN -----------------
+  # Equation :
+  # Sw = summation((Xc1 - m1)*(Xc1 - m1)T) + summation((Xc2 - m2)*(Xc2 - m2)T)
+  # --------------------------------------------------------------------
+  c1.sum = 0 # summation initialization
+  for (c1 in 1:7) #loop on class one 
+  {
+    curr.row = class.one[c1:c1 , 1:144] # dim (1 x 144)
+    # (Xc1 - m1)
+    curr.sub = curr.row - as.double(m1) # dim (1 x 144)
+    #curr.sub = lapply(curr.row, function(x)x- as.double(m1))
+    mat.curr.sub = matrix(0,1,144)
+    mat.curr.sub = rbind(mat.curr.sub,as.double(curr.sub))
+    curr.sub = mat.curr.sub[2:2 , 1:144]
+    # (Xc1 - m1)T
+    curr.sub.Transpose = t(curr.sub) # dim (144 x 1)
+    # (Xc1 - m1)*(Xc1 - m1)T
+    curr.Mult = curr.sub %*% curr.sub.Transpose # dim (1 X 1)
+    # summation((Xc1 - m1)*(Xc1 - m1)T)
+    c1.sum = c1.sum + curr.Mult 
+  }# end loop on class 1 for Sw summition
+  #-------------
+  c2.sum = 0 # summation initialization
+  for (c2 in 1:175) #loop on class one 
+  {
+    curr.row = class.two[c2] # dim (1 x 144)
+    # (Xc2 - m2)
+    curr.sub = curr.row - as.double(m2) # dim (1 x 144)
+    # (Xc2 - m2)T
+    curr.sub.Transpose = t(curr.sub) # dim (144 x 1)
+    # (Xc2 - m2)*(Xc2 - m2)T
+    curr.Mult = curr.sub %*% curr.sub.Transpose # dim (1 X 1)
+    # summation((Xc2 - m2)*(Xc2 - m2)T)
+    c2.sum = c2.sum + curr.Mult 
+  }# end loop on class 2 for Sw summition
+  # ------------ Calculate Sw ---------------
+  Sw = c1.sum + c2.sum # dim (1 x 1)
+  # -----------------------------------------
+  # ====== CALCULATE (W) FOR EACH CLASSIFIER ==========
+  # w = Sw.invers( m1 - m2 )
+  # -----------------------------------------
+  Sw.invers = ginv(Sw) #   dim (1x1)
+  mean.diffrence = as.double(m1) - as.double(m2) #   dim(1 x 144)
+  w.curr = Sw.invers %*% mean.diffrence # dim(1 x 144)
+  w.matrix = rbind(w.matrix , as.double(w.curr)) # append curr.w in big matrix of W
+  # -----------------------------------------
+  # ====== CALCULATE (W Node) FOR EACH CLASSIFIER ==========
+  # w.node = w.Transpose( m1 + m2 )/2
+  w.Transpose = t(w.curr)
+  mean.sum =as.double(m1) + as.double(m2)
+  w.mult.mean = w.Transpose %*% mean.sum
+  w.node.curr = w.mult.mean/2
+  w.node.matrix = rbind(w.node.matrix , as.double(w.node.curr)) # append to big w.node matrix
+  
+} # end loop on 26 classiffier
+# Remove initial w.matrix row and w.node
+w.matrix = w.matrix[2:27,1:144]   # dim(26 x 144)
+w.node.matrix = w.node.matrix[2:27,1:1]
+w.node.matrix = as.matrix(w.node.matrix) # dim( 26 x 1 )
+# ---------------------------------------------------------------------
+# ======================= Lets Start Testing ==========================
 
 
 
