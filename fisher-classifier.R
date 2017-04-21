@@ -53,7 +53,119 @@ for (curr in (1:182)){  # Loop on the paths list
 input.features = as.matrix(images.matrix[2:183,1:144])# now we have x.par
 #------------------------------------------------------------------------- 
 # =================== Lets Start the Algorithm ===================
-# Equation is :
+# Equation is : y(x) = (w.Transpose*x) + w.node
+# , Where
+# w = Sw.invers( m1 - m2 )
+# w.node = w.Transpose( m1 + m2 )/2
+# ----------------------------------
+# ================== first lets make function calculate mean ======================
+# mean = 1/total.points.no *(summation of all points of the class)
+# class 1 is always have N1 = 7 each have 144 feature
+# class 2 ' ' ' ' ' ' '  N2 = 175 ' ' ' ' ' ' ' ' '' 
+# Helper link for mean:
+# https://math.stackexchange.com/questions/24485/find-the-average-of-a-collection-of-points-in-2d-space
+# Helper link for how to write a function:
+# https://www.r-bloggers.com/how-to-write-and-debug-an-r-function/
+# ----------------------------------------------------------------------------
+# function calculate mean for single feature
+mean.feature <- function(feature.list , class.no)
+{
+  sum.features = 0
+  for (i in 1:length(feature.list))
+  {
+    sum.features =  sum.features + feature.list[i]
+  }
+  calculated.mean <- (1/class.no) * sum.features
+  return(calculated.mean)
+}
+# Testing statment working well
+# this is mean of feature 1 class 1 
+#mean(input.features[1:7,1:1]) # 0.003361345
+#val = mean.feature(input.features[1:7,1:1] , 7)  # 0.003361345
+#-------------------------------------------------------------------------------
+# function calculate mean for single class
+mean.class <- function(class.matrix , class.no)
+{
+  class.mean.list = list()
+  for(i in 1:144)
+  {
+    # calculate mean of current feature
+    curr.feature.mean = mean.feature(class.matrix[1:class.no , i:i] , class.no) 
+    # append the mean in the class mean list
+    class.mean.list[i] = curr.feature.mean
+  }
+  return(class.mean.list)
+}
+# Testing statments and it is working well 
+# make temp class 1 of char A
+#char.A = input.features[1:7 , 1:144]
+#N1 = 7
+#m1 = mean.class(char.A , N1)
+#char.Not.A = input.features[8:182 , 1:144]
+#N2 = 175
+#m2 = mean.class(char.Not.A , N2)
+#-------------------------------------------------------------------------------
+# ============= Build big loop to make 26 mean 1 and 2 ======================
+#-------------------------------------------------------------------------------
+big.m1 = matrix(0,1,144) # main mean matrix of 26 m1 for each classifier
+big.m2 = matrix(0,1,144) # main mean matrix of 26 m2 for each classifier
+for (curr.indx in 1:26)
+{ 
+  # loop 26 time to make 26 classifier for characters
+  # ----------- make class one subset --------------
+  # start from ([currIndex-1]*7)+1 to currIndex*7 
+  start.index = ((curr.indx-1)*7)+1
+  end.index  = start.index + 6
+  n1 = 7 # cound of points in class 1
+  class.one = input.features[start.index:end.index , 1:144]
+  # ----------- make class two subset --------------
+  if (curr.indx == 1)
+  {
+    print("I'm in if ")
+    print(curr.indx)
+    class.two = input.features[(end.index+1):182 , 1:144]
+  }
+  else if(curr.indx == 26)
+  {
+    print("I'm in Elseif")
+    print(curr.indx)
+    class.two = input.features[1:(start.index-1) , 1:144]
+  }
+  else
+  {
+    print("I'm in else")
+    print(curr.indx)
+    sub1 = input.features[1:(start.index-1) , 1:144] # for data before class one in main matrix
+    sub2 = input.features[(end.index+1):182 , 1:144] # for data after class one in main matrix
+    class.two = rbind(sub1 ,sub2)
+  }
+  n2 = 175 # cound of points in class 2
+  #--------------- calculate m1 , m2 -------------------
+  m1 = mean.class(class.one , n1)
+  m2 = mean.class(class.two , n2)
+  # -------------- Append means to big mean matrices -----------------
+  big.m1 = rbind(big.m1 , as.double(m1))
+  big.m2 = rbind(big.m2 , as.double(m2))
+}
+# Remove initial row in big mean matricies
+big.m1 = big.m1[2:27 , 1:144 ]
+big.m2 = big.m2[2:27 , 1:144 ]
+# --------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
