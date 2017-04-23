@@ -4,7 +4,7 @@ library(jpeg)
 library(MASS)
 library(plotly)
 # Step 1 :
-#--------- Load training data----------------------
+#--------- Load training & Testing data----------------------
 # each character have 7 images and 144 pixel(feature)
 # so lets make for each charachter matrix 7 rows and 144 column
 # ----------------------------------------------------
@@ -38,4 +38,5 @@ for (c in (1:26)){  # Loop on each character
     }
   }
 }
-# =====================================================
+print("Paths of training and testing images loaded successfully")
+# ========== Paths of training and testing images loaded successfully ============
