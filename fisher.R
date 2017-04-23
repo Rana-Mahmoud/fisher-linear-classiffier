@@ -223,10 +223,6 @@ for (curr.indx in 1:26)
   # -----------------------------------------
   # ====== CALCULATE (W) FOR EACH CLASSIFIER ==========
   # w = Sw.invers( m1 - m2 )
-  # -----------------------------------------
-  if (curr.indx ==12){
-    print ("debug here")
-  }
   Sw.invers = ginv(Sw) #   dim (1 x 1)
   dim(Sw.invers)
   mean.diffrence = t(as.matrix(as.double(m1) - as.double(m2))) #   dim(1 x 144)
@@ -236,10 +232,27 @@ for (curr.indx in 1:26)
   w.matrix = rbind(w.matrix , as.double(w.curr)) # append curr.w in big matrix of W
   dim(w.matrix)
   # -----------------------------------------
-  
+  # ====== CALCULATE (W Node) FOR EACH CLASSIFIER ==========
+  # w.node = w.Transpose( m1 + m2 )/2
+  w.Transpose = t(w.curr) #   dim(144 x 1)
+  dim(w.Transpose)
+  mean.sum = t(as.matrix(as.double(m1) + as.double(m2))) # dim(1 x 144)
+  dim(mean.sum)
+  w.mult.mean =  mean.sum %*% (- w.Transpose)   # dim(1 x 1)
+  dim(w.mult.mean)
+  w.node.curr = w.mult.mean*(1/2)  # dim(1 x 1)
+  dim(w.node.curr)
+  w.node.matrix = rbind(w.node.matrix , as.double(w.node.curr)) # append to big w.node matrix
+  dim(w.node.matrix)
 } # end 26 classifier loop 
-
-
+# Remove initial w.matrix row and w.node
+w.matrix = w.matrix[2:27,1:144]   # dim(26 x 144)
+dim(w.matrix)
+w.node.matrix = as.matrix(w.node.matrix[2:27,1:1]) # dim( 26 x 1 )
+dim(w.node.matrix)
+# -------------------- Training is DONE -------------------------------
+print("Training is done ")
+# ======================= Lets Start Testing ==========================
 
 
 
