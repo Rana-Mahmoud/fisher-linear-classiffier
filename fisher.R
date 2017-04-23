@@ -4,7 +4,7 @@ library(jpeg)
 library(MASS)
 library(plotly)
 # Step 1 :
-#--------- Load training data----------------------
+#--------- Load training & Testing data----------------------
 # each character have 7 images and 144 pixel(feature)
 # so lets make for each charachter matrix 7 rows and 144 column
 # ----------------------------------------------------
@@ -38,6 +38,8 @@ for (c in (1:26)){  # Loop on each character
     }
   }
 }
+print("Paths of training and testing images loaded successfully")
+# ========== Paths of training and testing images loaded successfully ============
 # =====================================================
 # ================= Read All images ===================
 # helper link for reading images data :
@@ -65,7 +67,8 @@ for (curr in (1:182)){  # Loop on the paths list
   images.matrix = rbind(images.matrix,as.double(curr_pixels))
 }
 # Delete the 1st row as it was zeros for just initialization
-input.features = as.matrix(images.matrix[2:183,1:144])# now we have x.par
+input.features = as.matrix(images.matrix[2:183,1:144])# now we have x.par dim(182 x 144)
+dim(input.features)
 #  ================  Load testing =================
 for (curr in (1:52)){  # Loop on the paths list
   curr.img = readJPEG(paths.test[[curr]], native = FALSE)
@@ -83,14 +86,14 @@ for (curr in (1:52)){  # Loop on the paths list
   testing.images.matrix = rbind(testing.images.matrix,as.double(curr_pixels))
 }
 # Delete the 1st row as it was zeros for just initialization
-testing.features = as.matrix(testing.images.matrix[2:53,1:144])# now we have x.par
+testing.features = as.matrix(testing.images.matrix[2:53,1:144])# dim(182 x 144)
+dim(testing.features)
 #------------------------------------------------------------------------- 
-print("Loading images data is done ")
 # =================== Lets Start the Algorithm ===================
 # Equation is : y(x) = (w.Transpose*x) + w.node
 # , Where
 # w = Sw.invers( m1 - m2 )
-# w.node = w.Transpose( m1 + m2 )/2
+# w.node = -w.Transpose( m1 + m2 )/2
 # ----------------------------------
 # ================== first lets make function calculate mean ======================
 # mean = 1/total.points.no *(summation of all points of the class)
@@ -112,11 +115,7 @@ mean.feature <- function(feature.list , class.no)
   calculated.mean <- (1/class.no) * sum.features
   return(calculated.mean)
 }
-# Testing statment working well
-# this is mean of feature 1 class 1 
-#mean(input.features[1:7,1:1]) # 0.003361345
-#val = mean.feature(input.features[1:7,1:1] , 7)  # 0.003361345
-#-----------------------------mean feature functuiion-----------------------------------------
+#-------------------------------------------------------------------------------
 # function calculate mean for single class
 mean.class <- function(class.matrix , class.no)
 {
@@ -133,15 +132,6 @@ mean.class <- function(class.matrix , class.no)
   dim(class.mean.mat)
   return(class.mean.mat)
 }
-# Testing statments and it is working well 
-# make temp class 1 of char A
-#char.A = input.features[1:7 , 1:144]
-#N1 = 7
-#m1 = mean.class(char.A , N1)
-#char.Not.A = input.features[8:182 , 1:144]
-#N2 = 175
-#m2 = mean.class(char.Not.A , N2)
-#------------------------------mean class function ----------------------------
 # ============= Build big loop to make 26 mean 1 and 2 ======================
 #-------------------------------------------------------------------------------
 w.matrix = matrix(0,1,144) # main W matrix of 26 for each classifier in row
@@ -158,20 +148,20 @@ for (curr.indx in 1:26)
   # ----------- make class two subset --------------
   if (curr.indx == 1)
   {
-    #print("I'm in if ")
-    #print(curr.indx)
+    print("I'm in if ")
+    print(curr.indx)
     class.two = input.features[(end.index+1):182 , 1:144]
   }
   else if(curr.indx == 26)
   {
-    #print("I'm in Elseif")
-    #print(curr.indx)
+    print("I'm in Elseif")
+    print(curr.indx)
     class.two = input.features[1:(start.index-1) , 1:144]
   }
   else
   {
-    #print("I'm in else")
-    #print(curr.indx)
+    print("I'm in else")
+    print(curr.indx)
     sub1 = input.features[1:(start.index-1) , 1:144] # for data before class one in main matrix
     sub2 = input.features[(end.index+1):182 , 1:144] # for data after class one in main matrix
     class.two = rbind(sub1 ,sub2)
@@ -185,8 +175,8 @@ for (curr.indx in 1:26)
   # -------------- CALCULATE Sw FROME MEAN -----------------
   # Equation :
   # Sw = summation((Xc1 - m1)*(Xc1 - m1)T) + summation((Xc2 - m2)*(Xc2 - m2)T)
-  # --------------------------------------------------------------------
-  c1.sum = matrix(0,144,144)# summation initialization
+  # ----------------------------  S1   --------------------------------
+  c1.sum = 0 # summation initialization
   for (c1 in 1:7) #loop on class one 
   {
     curr.row = t(as.matrix(class.one[c1:c1 , 1:144])) # dim (1 x 144)
@@ -199,14 +189,15 @@ for (curr.indx in 1:26)
     curr.sub.Transpose = t(curr.sub) # dim (144 x 1)
     dim(curr.sub.Transpose)
     # (Xc1 - m1)*(Xc1 - m1)T
-    curr.Mult =  curr.sub.Transpose %*% curr.sub  # dim (144 X 144)
+    curr.Mult =  curr.sub  %*% curr.sub.Transpose # dim (1 X 1)
     dim(curr.Mult)
     # summation((Xc1 - m1)*(Xc1 - m1)T)
     c1.sum = c1.sum + curr.Mult 
     dim(c1.sum)
   }# end loop on class 1 for Sw summition
-  #-------------
-  c2.sum = matrix(0,144,144) # summation initialization
+  dim(c1.sum) #  dim (1 X 1)
+  # ----------------------------  S2   --------------------------------
+  c2.sum = 0  # summation initialization
   for (c2 in 1:175) #loop on class one 
   {
     curr.row = t(as.matrix(class.two[c2:c2 , 1:144])) # dim (1 x 144)
@@ -219,24 +210,24 @@ for (curr.indx in 1:26)
     curr.sub.Transpose = t(curr.sub) # dim (144 x 1)
     dim(curr.sub.Transpose)
     # (Xc2 - m2)*(Xc2 - m2)T
-    curr.Mult =  curr.sub.Transpose %*% curr.sub  # dim (144 X 144)
+    curr.Mult =  curr.sub  %*% curr.sub.Transpose # dim (1 X 1)
     dim(curr.Mult)
     # summation((Xc2 - m2)*(Xc2 - m2)T)
     c2.sum = c2.sum + curr.Mult 
-    dim(c2.sum)
   }# end loop on class 2 for Sw summition
-  # ------------ Calculate Sw ---------------
+  dim(c2.sum) # dim (1 X 1)
+  # ========================== Calculate Sw ==========================
+  Sw = 0
   Sw = c1.sum + c2.sum # dim (144 x 144)
   dim (Sw)
   # -----------------------------------------
   # ====== CALCULATE (W) FOR EACH CLASSIFIER ==========
   # w = Sw.invers( m1 - m2 )
-  # -----------------------------------------
-  Sw.invers = ginv(Sw) #   dim (144x144)
+  Sw.invers = ginv(Sw) #   dim (1 x 1)
   dim(Sw.invers)
   mean.diffrence = t(as.matrix(as.double(m1) - as.double(m2))) #   dim(1 x 144)
   dim(mean.diffrence)
-  w.curr =  mean.diffrence %*% Sw.invers # dim(1 x 144)
+  w.curr =   Sw.invers %*% mean.diffrence # dim(1 x 144)
   dim(w.curr)
   w.matrix = rbind(w.matrix , as.double(w.curr)) # append curr.w in big matrix of W
   dim(w.matrix)
@@ -249,17 +240,17 @@ for (curr.indx in 1:26)
   dim(mean.sum)
   w.mult.mean =  mean.sum %*% (- w.Transpose)   # dim(1 x 1)
   dim(w.mult.mean)
-  w.node.curr = w.mult.mean/2  # dim(1 x 1)
+  w.node.curr = w.mult.mean*(1/2)  # dim(1 x 1)
   dim(w.node.curr)
   w.node.matrix = rbind(w.node.matrix , as.double(w.node.curr)) # append to big w.node matrix
   dim(w.node.matrix)
-  
-} # end loop on 26 classiffier
+} # end 26 classifier loop 
 # Remove initial w.matrix row and w.node
 w.matrix = w.matrix[2:27,1:144]   # dim(26 x 144)
-w.node.matrix = w.node.matrix[2:27,1:1]
-w.node.matrix = as.matrix(w.node.matrix) # dim( 26 x 1 )
-# ---------------------------------------------------------------------
+dim(w.matrix)
+w.node.matrix = as.matrix(w.node.matrix[2:27,1:1]) # dim( 26 x 1 )
+dim(w.node.matrix)
+# -------------------- Training is DONE -------------------------------
 print("Training is done ")
 # ======================= Lets Start Testing ==========================
 max.index.classfier = matrix(0,52,1) # initiat empty lables results for each image
@@ -295,9 +286,6 @@ for (t in 1:52)
 #----------------------------------------------------
 print("Testing is done ")
 # =============== Plot Max index value ===========
-# Plot classification Matrix
-plot(xlim = c(1,26),ylim= c(1,26),max.index.classfier[1:26,1], col = "blue", cex = .6)
-#plot(as.matrix(characters)[1:26,1],max.index.classfier[1:26,1])
 # --------
 # Helper ploting libnk
 # https://plot.ly/r/figure-labels/
@@ -322,14 +310,14 @@ p <- plot_ly(x = x.axis[1,1:26], y = max.index.classfier[1:26,1], mode = "marker
   layout(xaxis = x, yaxis = y)
 p
 
-#------------------
-# Displaied characters 
-# http://stackoverflow.com/questions/17347991/r-plot-with-strings-showing-in-the-axis
-#---------------------
-plot(max.index.classfier[1:26,1], axes=FALSE, xlab="dorms")
-axis(2)
-axis(1, at=seq_along(max.index.classfier[1:26,1]),labels=as.character(characters), las=2)
-box()
+
+
+
+
+
+
+
+
 
 
 
