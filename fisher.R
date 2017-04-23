@@ -173,14 +173,30 @@ for (curr.indx in 1:26)
   m2 = mean.class(class.two , n2) # dim(1x144)
   dim(m2)
   # -------------- CALCULATE Sw FROME MEAN -----------------
-  
+  # Equation :
+  # Sw = summation((Xc1 - m1)*(Xc1 - m1)T) + summation((Xc2 - m2)*(Xc2 - m2)T)
+  # --------------------------------------------------------------------
+  c1.sum = matrix(0,144,144)# summation initialization
+  for (c1 in 1:7) #loop on class one 
+  {
+    curr.row = t(as.matrix(class.one[c1:c1 , 1:144])) # dim (1 x 144)
+    dim(curr.row)
+    # (Xc1 - m1)
+    dim(m1)
+    curr.sub = curr.row - as.double(m1) # dim (1 x 144)
+    dim(curr.sub)
+    # (Xc1 - m1)T
+    curr.sub.Transpose = t(curr.sub) # dim (144 x 1)
+    dim(curr.sub.Transpose)
+    # (Xc1 - m1)*(Xc1 - m1)T
+    curr.Mult =  curr.sub.Transpose %*% curr.sub  # dim (144 X 144)
+    dim(curr.Mult)
+    # summation((Xc1 - m1)*(Xc1 - m1)T)
+    c1.sum = c1.sum + curr.Mult 
+    dim(c1.sum)
+  }# end loop on class 1 for Sw summition
+  dim(c1.sum) #  dim (144 X 144)
 }
-# Remove initial w.matrix row and w.node
-w.matrix = w.matrix[2:27,1:144]   # dim(26 x 144)
-dim(w.matrix)
-w.node.matrix = as.matrix(w.node.matrix[2:27,1:1]) # dim( 26 x 1 )
-dim(w.node.matrix)
-# ---------------------------------------------------------------------
 
 
 
