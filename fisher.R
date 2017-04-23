@@ -216,7 +216,15 @@ for (curr.indx in 1:26)
     c2.sum = c2.sum + curr.Mult 
   }# end loop on class 2 for Sw summition
   dim(c2.sum) # dim (144 X 144)
-}
+  # ========================== Calculate Sw ==========================
+  Sw = c1.sum + c2.sum # dim (144 x 144)
+  dim (Sw)
+  # -----------------------------------------
+  # ====== CALCULATE (W) FOR EACH CLASSIFIER ==========
+  # w = Sw.invers( m1 - m2 )
+  # -----------------------------------------
+  
+} # end 26 classifier loop 
 
 
 
