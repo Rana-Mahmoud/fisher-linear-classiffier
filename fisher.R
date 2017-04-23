@@ -175,7 +175,7 @@ for (curr.indx in 1:26)
   # -------------- CALCULATE Sw FROME MEAN -----------------
   # Equation :
   # Sw = summation((Xc1 - m1)*(Xc1 - m1)T) + summation((Xc2 - m2)*(Xc2 - m2)T)
-  # --------------------------------------------------------------------
+  # ----------------------------  S1   --------------------------------
   c1.sum = matrix(0,144,144)# summation initialization
   for (c1 in 1:7) #loop on class one 
   {
@@ -196,6 +196,26 @@ for (curr.indx in 1:26)
     dim(c1.sum)
   }# end loop on class 1 for Sw summition
   dim(c1.sum) #  dim (144 X 144)
+  # ----------------------------  S2   --------------------------------
+  c2.sum = matrix(0,144,144) # summation initialization
+  for (c2 in 1:175) #loop on class one 
+  {
+    curr.row = t(as.matrix(class.two[c2:c2 , 1:144])) # dim (1 x 144)
+    dim(curr.row)
+    # (Xc2 - m2)
+    dim(m2)
+    curr.sub = curr.row - as.double(m2) # dim (1 x 144)
+    dim(curr.sub)
+    # (Xc2 - m2)T
+    curr.sub.Transpose = t(curr.sub) # dim (144 x 1)
+    dim(curr.sub.Transpose)
+    # (Xc2 - m2)*(Xc2 - m2)T
+    curr.Mult =  curr.sub.Transpose %*% curr.sub  # dim (144 X 144)
+    dim(curr.Mult)
+    # summation((Xc2 - m2)*(Xc2 - m2)T)
+    c2.sum = c2.sum + curr.Mult 
+  }# end loop on class 2 for Sw summition
+  dim(c2.sum) # dim (144 X 144)
 }
 
 
