@@ -69,7 +69,26 @@ for (curr in (1:182)){  # Loop on the paths list
 # Delete the 1st row as it was zeros for just initialization
 input.features = as.matrix(images.matrix[2:183,1:144])# now we have x.par dim(182 x 144)
 dim(input.features)
-
+#  ================  Load testing =================
+for (curr in (1:52)){  # Loop on the paths list
+  curr.img = readJPEG(paths.test[[curr]], native = FALSE)
+  # sort pixels in one list of features
+  # Now ---------- lets read all pixels in on list of 144 feature
+  curr_pixels = list()
+  count = 1   # counter of features list
+  for (x in 1:12){    # loop on x axis 
+    for (y in 1:12){  # loop on y axis
+      curr_pixels[count] = curr.img[x,y] # append pixel value in list of features
+      count = count + 1 # incremant index of list
+    }
+  }
+  # combin as row to the main data matrix
+  testing.images.matrix = rbind(testing.images.matrix,as.double(curr_pixels))
+}
+# Delete the 1st row as it was zeros for just initialization
+testing.features = as.matrix(testing.images.matrix[2:53,1:144])# dim(182 x 144)
+dim(testing.features)
+#------------------------------------------------------------------------- 
 
 
 
