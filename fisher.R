@@ -176,7 +176,7 @@ for (curr.indx in 1:26)
   # Equation :
   # Sw = summation((Xc1 - m1)*(Xc1 - m1)T) + summation((Xc2 - m2)*(Xc2 - m2)T)
   # ----------------------------  S1   --------------------------------
-  c1.sum = matrix(0,144,144)# summation initialization
+  c1.sum = 0 # summation initialization
   for (c1 in 1:7) #loop on class one 
   {
     curr.row = t(as.matrix(class.one[c1:c1 , 1:144])) # dim (1 x 144)
@@ -189,15 +189,15 @@ for (curr.indx in 1:26)
     curr.sub.Transpose = t(curr.sub) # dim (144 x 1)
     dim(curr.sub.Transpose)
     # (Xc1 - m1)*(Xc1 - m1)T
-    curr.Mult =  curr.sub.Transpose %*% curr.sub  # dim (144 X 144)
+    curr.Mult =  curr.sub  %*% curr.sub.Transpose # dim (1 X 1)
     dim(curr.Mult)
     # summation((Xc1 - m1)*(Xc1 - m1)T)
     c1.sum = c1.sum + curr.Mult 
     dim(c1.sum)
   }# end loop on class 1 for Sw summition
-  dim(c1.sum) #  dim (144 X 144)
+  dim(c1.sum) #  dim (1 X 1)
   # ----------------------------  S2   --------------------------------
-  c2.sum = matrix(0,144,144) # summation initialization
+  c2.sum = 0  # summation initialization
   for (c2 in 1:175) #loop on class one 
   {
     curr.row = t(as.matrix(class.two[c2:c2 , 1:144])) # dim (1 x 144)
@@ -210,18 +210,31 @@ for (curr.indx in 1:26)
     curr.sub.Transpose = t(curr.sub) # dim (144 x 1)
     dim(curr.sub.Transpose)
     # (Xc2 - m2)*(Xc2 - m2)T
-    curr.Mult =  curr.sub.Transpose %*% curr.sub  # dim (144 X 144)
+    curr.Mult =  curr.sub  %*% curr.sub.Transpose # dim (1 X 1)
     dim(curr.Mult)
     # summation((Xc2 - m2)*(Xc2 - m2)T)
     c2.sum = c2.sum + curr.Mult 
   }# end loop on class 2 for Sw summition
-  dim(c2.sum) # dim (144 X 144)
+  dim(c2.sum) # dim (1 X 1)
   # ========================== Calculate Sw ==========================
+  Sw = 0
   Sw = c1.sum + c2.sum # dim (144 x 144)
   dim (Sw)
   # -----------------------------------------
   # ====== CALCULATE (W) FOR EACH CLASSIFIER ==========
   # w = Sw.invers( m1 - m2 )
+  # -----------------------------------------
+  if (curr.indx ==12){
+    print ("debug here")
+  }
+  Sw.invers = ginv(Sw) #   dim (1 x 1)
+  dim(Sw.invers)
+  mean.diffrence = t(as.matrix(as.double(m1) - as.double(m2))) #   dim(1 x 144)
+  dim(mean.diffrence)
+  w.curr =   Sw.invers %*% mean.diffrence # dim(1 x 144)
+  dim(w.curr)
+  w.matrix = rbind(w.matrix , as.double(w.curr)) # append curr.w in big matrix of W
+  dim(w.matrix)
   # -----------------------------------------
   
 } # end 26 classifier loop 
