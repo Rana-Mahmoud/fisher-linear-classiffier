@@ -253,10 +253,62 @@ dim(w.node.matrix)
 # -------------------- Training is DONE -------------------------------
 print("Training is done ")
 # ======================= Lets Start Testing ==========================
-
-
-
-
+max.index.classfier = matrix(0,52,1) # initiat empty lables results for each image
+# loop on testing images
+for (t in 1:52)
+{
+  classifiers.matrix = matrix(0,1,1) # initiat empty matric dim (26 x 1) carries y(x)
+  curr.x = testing.features[t:t , 1:144] # dim(1 x 144)
+  curr.x = t(curr.x) # dim(144 x 1)
+  dim(curr.x)
+  for (c in 1:26)
+  {
+    curr.w = w.matrix[c:c ,1:144] # get current classifier w ### dim(144 x 1)
+    #dim(curr.w)
+    curr.w = t(as.matrix(curr.w))  ### dim(1 x 144)
+    dim(curr.w)
+    curr.w.node = as.matrix(w.node.matrix[c:c ,1:1] )# get current classifier w.node ### dim(1 x 1)
+    dim(curr.w.node)
+    dim(curr.x)
+    y.lable = (curr.w %*% t(curr.x)) + curr.w.node ### dim(1 x 1)
+    dim(y.lable)
+    classifiers.matrix = rbind(classifiers.matrix ,as.double(y.lable)) 
+  }
+  #remove 1st row 
+  classifiers.matrix = as.matrix(classifiers.matrix[2:27 , 1:1])
+  # keep index of max value
+  # helper link
+  # http://stackoverflow.com/questions/17606906/find-row-and-column-index-of-maximum-value-in-a-matrix
+  #------------------------------------------
+  max.ind = which(classifiers.matrix == max(classifiers.matrix), arr.ind = TRUE)
+  max.index.classfier[t,1] = max.ind[[1]] 
+}
+#----------------------------------------------------
+print("Testing is done ")
+# =============== Plot Max index value ===========
+# --------
+# Helper ploting libnk
+# https://plot.ly/r/figure-labels/
+#====================================
+f <- list(
+  family = "Courier New, monospace",
+  size = 18,
+  color = "#7f7f7f"
+)
+x <- list(
+  title = "Characters",
+  titlefont = f
+  #cex.axis = 3
+)
+y <- list(
+  title = "Classification Count",
+  titlefont = f 
+  #labels=as.character(characters)
+)
+x.axis = matrix(1:26,1,26)
+p <- plot_ly(x = x.axis[1,1:26], y = max.index.classfier[1:26,1], mode = "markers") %>%
+  layout(xaxis = x, yaxis = y)
+p
 
 
 
