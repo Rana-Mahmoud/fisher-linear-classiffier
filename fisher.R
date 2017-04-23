@@ -168,6 +168,11 @@ for (curr.indx in 1:26)
   }
   n2 = 175 # cound of points in class 2
   #--------------- calculate m1 , m2 -------------------
+  m1 = mean.class(class.one , n1) # dim(1x144)
+  dim(m1)
+  m2 = mean.class(class.two , n2) # dim(1x144)
+  dim(m2)
+  # -------------- CALCULATE Sw FROME MEAN -----------------
   
 }
 # Remove initial w.matrix row and w.node
