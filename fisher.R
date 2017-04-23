@@ -40,3 +40,37 @@ for (c in (1:26)){  # Loop on each character
 }
 print("Paths of training and testing images loaded successfully")
 # ========== Paths of training and testing images loaded successfully ============
+# =====================================================
+# ================= Read All images ===================
+# helper link for reading images data :
+# https://www.rdocumentation.org/packages/readbitmap/versions/0.1-4/topics/read.bitmap
+#-------------------------------------------------------
+# heper link for matrix initialization:
+# https://www.r-bloggers.com/making-matrices-with-zeros-and-ones/
+#--------------------------------------------------------
+images.matrix = matrix(0, 1, 144) # initialize zeros matrix 1 row 144 column 
+testing.images.matrix = matrix(0, 1, 144) # initialize zeros matrix 1 row 144 column 
+#  ================  Load training ===================
+for (curr in (1:182)){  # Loop on the paths list
+  curr.img = readJPEG(paths.train[[curr]], native = FALSE)
+  # sort pixels in one list of features
+  # Now ---------- lets read all pixels in on list of 144 feature
+  curr_pixels = list()
+  count = 1   # counter of features list
+  for (x in 1:12){    # loop on x axis 
+    for (y in 1:12){  # loop on y axis
+      curr_pixels[count] = curr.img[x,y] # append pixel value in list of features
+      count = count + 1 # incremant index of list
+    }
+  }
+  # combin as row to the main data matrix
+  images.matrix = rbind(images.matrix,as.double(curr_pixels))
+}
+# Delete the 1st row as it was zeros for just initialization
+input.features = as.matrix(images.matrix[2:183,1:144])# now we have x.par dim(182 x 144)
+dim(input.features)
+
+
+
+
+
