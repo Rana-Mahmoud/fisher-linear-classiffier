@@ -2,6 +2,7 @@
 # that can recognize scanned images of the 26 lower-case characters
 library(jpeg)
 library(MASS)
+library(plotly)
 # Step 1 :
 #--------- Load training data----------------------
 # each character have 7 images and 144 pixel(feature)
@@ -84,6 +85,7 @@ for (curr in (1:52)){  # Loop on the paths list
 # Delete the 1st row as it was zeros for just initialization
 testing.features = as.matrix(testing.images.matrix[2:53,1:144])# now we have x.par
 #------------------------------------------------------------------------- 
+print("Loading images data is done ")
 # =================== Lets Start the Algorithm ===================
 # Equation is : y(x) = (w.Transpose*x) + w.node
 # , Where
@@ -114,7 +116,7 @@ mean.feature <- function(feature.list , class.no)
 # this is mean of feature 1 class 1 
 #mean(input.features[1:7,1:1]) # 0.003361345
 #val = mean.feature(input.features[1:7,1:1] , 7)  # 0.003361345
-#-------------------------------------------------------------------------------
+#-----------------------------mean feature functuiion-----------------------------------------
 # function calculate mean for single class
 mean.class <- function(class.matrix , class.no)
 {
@@ -124,9 +126,12 @@ mean.class <- function(class.matrix , class.no)
     # calculate mean of current feature
     curr.feature.mean = mean.feature(class.matrix[1:class.no , i:i] , class.no) 
     # append the mean in the class mean list
-    class.mean.list[i] = curr.feature.mean
+    class.mean.list[i] =as.double(curr.feature.mean)
   }
-  return(class.mean.list)
+  typeof(class.mean.list)
+  class.mean.mat =t(as.matrix(class.mean.list)) # dim (1 x 144)
+  dim(class.mean.mat)
+  return(class.mean.mat)
 }
 # Testing statments and it is working well 
 # make temp class 1 of char A
@@ -136,7 +141,7 @@ mean.class <- function(class.matrix , class.no)
 #char.Not.A = input.features[8:182 , 1:144]
 #N2 = 175
 #m2 = mean.class(char.Not.A , N2)
-#-------------------------------------------------------------------------------
+#------------------------------mean class function ----------------------------
 # ============= Build big loop to make 26 mean 1 and 2 ======================
 #-------------------------------------------------------------------------------
 w.matrix = matrix(0,1,144) # main W matrix of 26 for each classifier in row
@@ -153,81 +158,101 @@ for (curr.indx in 1:26)
   # ----------- make class two subset --------------
   if (curr.indx == 1)
   {
-    print("I'm in if ")
-    print(curr.indx)
+    #print("I'm in if ")
+    #print(curr.indx)
     class.two = input.features[(end.index+1):182 , 1:144]
   }
   else if(curr.indx == 26)
   {
-    print("I'm in Elseif")
-    print(curr.indx)
+    #print("I'm in Elseif")
+    #print(curr.indx)
     class.two = input.features[1:(start.index-1) , 1:144]
   }
   else
   {
-    print("I'm in else")
-    print(curr.indx)
+    #print("I'm in else")
+    #print(curr.indx)
     sub1 = input.features[1:(start.index-1) , 1:144] # for data before class one in main matrix
     sub2 = input.features[(end.index+1):182 , 1:144] # for data after class one in main matrix
     class.two = rbind(sub1 ,sub2)
   }
   n2 = 175 # cound of points in class 2
   #--------------- calculate m1 , m2 -------------------
-  m1 = mean.class(class.one , n1)
-  m2 = mean.class(class.two , n2)
+  m1 = mean.class(class.one , n1) # dim(1x144)
+  dim(m1)
+  m2 = mean.class(class.two , n2) # dim(1x144)
+  dim(m2)
   # -------------- CALCULATE Sw FROME MEAN -----------------
   # Equation :
   # Sw = summation((Xc1 - m1)*(Xc1 - m1)T) + summation((Xc2 - m2)*(Xc2 - m2)T)
   # --------------------------------------------------------------------
-  c1.sum = 0 # summation initialization
+  c1.sum = matrix(0,144,144)# summation initialization
   for (c1 in 1:7) #loop on class one 
   {
-    curr.row = class.one[c1:c1 , 1:144] # dim (1 x 144)
+    curr.row = t(as.matrix(class.one[c1:c1 , 1:144])) # dim (1 x 144)
+    dim(curr.row)
     # (Xc1 - m1)
+    dim(m1)
     curr.sub = curr.row - as.double(m1) # dim (1 x 144)
-    #curr.sub = lapply(curr.row, function(x)x- as.double(m1))
-    mat.curr.sub = matrix(0,1,144)
-    mat.curr.sub = rbind(mat.curr.sub,as.double(curr.sub))
-    curr.sub = mat.curr.sub[2:2 , 1:144]
+    dim(curr.sub)
     # (Xc1 - m1)T
     curr.sub.Transpose = t(curr.sub) # dim (144 x 1)
+    dim(curr.sub.Transpose)
     # (Xc1 - m1)*(Xc1 - m1)T
-    curr.Mult = curr.sub %*% curr.sub.Transpose # dim (1 X 1)
+    curr.Mult =  curr.sub.Transpose %*% curr.sub  # dim (144 X 144)
+    dim(curr.Mult)
     # summation((Xc1 - m1)*(Xc1 - m1)T)
     c1.sum = c1.sum + curr.Mult 
+    dim(c1.sum)
   }# end loop on class 1 for Sw summition
   #-------------
-  c2.sum = 0 # summation initialization
+  c2.sum = matrix(0,144,144) # summation initialization
   for (c2 in 1:175) #loop on class one 
   {
-    curr.row = class.two[c2] # dim (1 x 144)
+    curr.row = t(as.matrix(class.two[c2:c2 , 1:144])) # dim (1 x 144)
+    dim(curr.row)
     # (Xc2 - m2)
+    dim(m2)
     curr.sub = curr.row - as.double(m2) # dim (1 x 144)
+    dim(curr.sub)
     # (Xc2 - m2)T
     curr.sub.Transpose = t(curr.sub) # dim (144 x 1)
+    dim(curr.sub.Transpose)
     # (Xc2 - m2)*(Xc2 - m2)T
-    curr.Mult = curr.sub %*% curr.sub.Transpose # dim (1 X 1)
+    curr.Mult =  curr.sub.Transpose %*% curr.sub  # dim (144 X 144)
+    dim(curr.Mult)
     # summation((Xc2 - m2)*(Xc2 - m2)T)
     c2.sum = c2.sum + curr.Mult 
+    dim(c2.sum)
   }# end loop on class 2 for Sw summition
   # ------------ Calculate Sw ---------------
-  Sw = c1.sum + c2.sum # dim (1 x 1)
+  Sw = c1.sum + c2.sum # dim (144 x 144)
+  dim (Sw)
   # -----------------------------------------
   # ====== CALCULATE (W) FOR EACH CLASSIFIER ==========
   # w = Sw.invers( m1 - m2 )
   # -----------------------------------------
-  Sw.invers = ginv(Sw) #   dim (1x1)
-  mean.diffrence = as.double(m1) - as.double(m2) #   dim(1 x 144)
-  w.curr = Sw.invers %*% mean.diffrence # dim(1 x 144)
+  Sw.invers = ginv(Sw) #   dim (144x144)
+  dim(Sw.invers)
+  mean.diffrence = t(as.matrix(as.double(m1) - as.double(m2))) #   dim(1 x 144)
+  dim(mean.diffrence)
+  w.curr =  mean.diffrence %*% Sw.invers # dim(1 x 144)
+  dim(w.curr)
   w.matrix = rbind(w.matrix , as.double(w.curr)) # append curr.w in big matrix of W
+  dim(w.matrix)
   # -----------------------------------------
   # ====== CALCULATE (W Node) FOR EACH CLASSIFIER ==========
   # w.node = w.Transpose( m1 + m2 )/2
-  w.Transpose = t(w.curr)
-  mean.sum =as.double(m1) + as.double(m2)
-  w.mult.mean = w.Transpose %*% mean.sum
-  w.node.curr = w.mult.mean/2
+  w.Transpose = t(w.curr) #   dim(144 x 1)
+  dim(w.Transpose)
+  mean.sum = t(as.matrix(as.double(m1) + as.double(m2))) # dim(1 x 144)
+  dim(mean.sum)
+  w.mult.mean =  mean.sum %*% (- w.Transpose)   # dim(1 x 1)
+  dim(w.mult.mean)
+  w.node.curr = w.mult.mean/2  # dim(1 x 1)
+  dim(w.node.curr)
   w.node.matrix = rbind(w.node.matrix , as.double(w.node.curr)) # append to big w.node matrix
+  dim(w.node.matrix)
   
 } # end loop on 26 classiffier
 # Remove initial w.matrix row and w.node
@@ -235,6 +260,7 @@ w.matrix = w.matrix[2:27,1:144]   # dim(26 x 144)
 w.node.matrix = w.node.matrix[2:27,1:1]
 w.node.matrix = as.matrix(w.node.matrix) # dim( 26 x 1 )
 # ---------------------------------------------------------------------
+print("Training is done ")
 # ======================= Lets Start Testing ==========================
 max.index.classfier = matrix(0,52,1) # initiat empty lables results for each image
 # loop on testing images
@@ -243,11 +269,18 @@ for (t in 1:52)
   classifiers.matrix = matrix(0,1,1) # initiat empty matric dim (26 x 1) carries y(x)
   curr.x = testing.features[t:t , 1:144] # dim(1 x 144)
   curr.x = t(curr.x) # dim(144 x 1)
+  dim(curr.x)
   for (c in 1:26)
   {
-    curr.w = w.matrix[c:c ,1:144] # get current classifier w ### dim(1 x 144)
-    curr.w.node = w.node.matrix[c:c ,1:1] # get current classifier w.node ### dim(1 x 1)
-    y.lable = (t(as.matrix(curr.w)) %*% t(curr.x) ) + curr.w.node ### dim(1 x 1)
+    curr.w = w.matrix[c:c ,1:144] # get current classifier w ### dim(144 x 1)
+    #dim(curr.w)
+    curr.w = t(as.matrix(curr.w))  ### dim(1 x 144)
+    dim(curr.w)
+    curr.w.node = as.matrix(w.node.matrix[c:c ,1:1] )# get current classifier w.node ### dim(1 x 1)
+    dim(curr.w.node)
+    dim(curr.x)
+    y.lable = (curr.w %*% t(curr.x)) + curr.w.node ### dim(1 x 1)
+    dim(y.lable)
     classifiers.matrix = rbind(classifiers.matrix ,as.double(y.lable)) 
   }
   #remove 1st row 
@@ -259,9 +292,44 @@ for (t in 1:52)
   max.ind = which(classifiers.matrix == max(classifiers.matrix), arr.ind = TRUE)
   max.index.classfier[t,1] = max.ind[[1]] 
 }
+#----------------------------------------------------
+print("Testing is done ")
 # =============== Plot Max index value ===========
-#Plot accurecy Matrix
+# Plot classification Matrix
 plot(xlim = c(1,26),ylim= c(1,26),max.index.classfier[1:26,1], col = "blue", cex = .6)
+#plot(as.matrix(characters)[1:26,1],max.index.classfier[1:26,1])
+# --------
+# Helper ploting libnk
+# https://plot.ly/r/figure-labels/
+#====================================
+f <- list(
+  family = "Courier New, monospace",
+  size = 18,
+  color = "#7f7f7f"
+)
+x <- list(
+  title = "Characters",
+  titlefont = f
+  #cex.axis = 3
+)
+y <- list(
+  title = "Classification Count",
+  titlefont = f 
+  #labels=as.character(characters)
+)
+x.axis = matrix(1:26,1,26)
+p <- plot_ly(x = x.axis[1,1:26], y = max.index.classfier[1:26,1], mode = "markers") %>%
+  layout(xaxis = x, yaxis = y)
+p
+
+#------------------
+# Displaied characters 
+# http://stackoverflow.com/questions/17347991/r-plot-with-strings-showing-in-the-axis
+#---------------------
+plot(max.index.classfier[1:26,1], axes=FALSE, xlab="dorms")
+axis(2)
+axis(1, at=seq_along(max.index.classfier[1:26,1]),labels=as.character(characters), las=2)
+box()
 
 
 
