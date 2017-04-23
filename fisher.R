@@ -89,7 +89,51 @@ for (curr in (1:52)){  # Loop on the paths list
 testing.features = as.matrix(testing.images.matrix[2:53,1:144])# dim(182 x 144)
 dim(testing.features)
 #------------------------------------------------------------------------- 
-
+# =================== Lets Start the Algorithm ===================
+# Equation is : y(x) = (w.Transpose*x) + w.node
+# , Where
+# w = Sw.invers( m1 - m2 )
+# w.node = -w.Transpose( m1 + m2 )/2
+# ----------------------------------
+# ================== first lets make function calculate mean ======================
+# mean = 1/total.points.no *(summation of all points of the class)
+# class 1 is always have N1 = 7 each have 144 feature
+# class 2 ' ' ' ' ' ' '  N2 = 175 ' ' ' ' ' ' ' ' '' 
+# Helper link for mean:
+# https://math.stackexchange.com/questions/24485/find-the-average-of-a-collection-of-points-in-2d-space
+# Helper link for how to write a function:
+# https://www.r-bloggers.com/how-to-write-and-debug-an-r-function/
+# ----------------------------------------------------------------------------
+# function calculate mean for single feature
+mean.feature <- function(feature.list , class.no)
+{
+  sum.features = 0
+  for (i in 1:length(feature.list))
+  {
+    sum.features =  sum.features + feature.list[i]
+  }
+  calculated.mean <- (1/class.no) * sum.features
+  return(calculated.mean)
+}
+#-------------------------------------------------------------------------------
+# function calculate mean for single class
+mean.class <- function(class.matrix , class.no)
+{
+  class.mean.list = list()
+  for(i in 1:144)
+  {
+    # calculate mean of current feature
+    curr.feature.mean = mean.feature(class.matrix[1:class.no , i:i] , class.no) 
+    # append the mean in the class mean list
+    class.mean.list[i] =as.double(curr.feature.mean)
+  }
+  typeof(class.mean.list)
+  class.mean.mat =t(as.matrix(class.mean.list)) # dim (1 x 144)
+  dim(class.mean.mat)
+  return(class.mean.mat)
+}
+# ============= Build big loop to make 26 mean 1 and 2 ======================
+#-------------------------------------------------------------------------------
 
 
 
