@@ -285,34 +285,30 @@ for (t in 1:52)
 }
 #----------------------------------------------------
 print("Testing is done ")
+# =============== Count values ==========
+counter = list()
+for(z in 1:26)
+{
+  # loop on each char counter and check no of correct classification
+  curr.count = 0
+  img.index = (z*2)-1
+  curr.imgs = max.index.classfier[img.index:(img.index+1) , 1:1]
+  for(im in 1:2)
+  {
+    if(curr.imgs[[im]]==z)
+    {curr.count = curr.count + 1}
+  }
+  counter[z]=curr.count
+}
 # =============== Plot Max index value ===========
-# --------
-# Helper ploting libnk
-# https://plot.ly/r/figure-labels/
-#====================================
-f <- list(
-  family = "Courier New, monospace",
-  size = 18,
-  color = "#7f7f7f"
-)
-x <- list(
-  title = "Characters",
-  titlefont = f
-  #cex.axis = 3
-)
-y <- list(
-  title = "Classification Count",
-  titlefont = f 
-  #labels=as.character(characters)
-)
-x.axis = matrix(1:26,1,26)
-p <- plot_ly(x = x.axis[1,1:26], y = max.index.classfier[1:26,1], mode = "markers") %>%
-  layout(xaxis = x, yaxis = y)
-p
-
-
-
-
+# Bar plot
+# helper link 
+# https://stat.ethz.ch/R-manual/R-devel/library/graphics/html/barplot.html
+#-------------------------------------------------
+x = list(1:26)
+counts <- table(as.double(counter))
+barplot(as.double(counter),width = 0.5, main="Fisher classifer ", xlab="Characters"
+        , ylab = "no of correcctly classified",beside = T, names.arg = letters)
 
 
 
