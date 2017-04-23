@@ -134,6 +134,77 @@ mean.class <- function(class.matrix , class.no)
 }
 # ============= Build big loop to make 26 mean 1 and 2 ======================
 #-------------------------------------------------------------------------------
+w.matrix = matrix(0,1,144) # main W matrix of 26 for each classifier in row
+w.node.matrix = matrix(0,1,1) # main W node column of 26 value for each classifier in row
+# loop 26 time to make 26 classifier for characters
+for (curr.indx in 1:26)
+{ 
+  # ----------- make class one subset --------------
+  # start from ([currIndex-1]*7)+1 to currIndex*7 
+  start.index = ((curr.indx-1)*7)+1
+  end.index  = start.index + 6
+  n1 = 7 # cound of points in class 1
+  class.one = input.features[start.index:end.index , 1:144]
+  # ----------- make class two subset --------------
+  if (curr.indx == 1)
+  {
+    print("I'm in if ")
+    print(curr.indx)
+    class.two = input.features[(end.index+1):182 , 1:144]
+  }
+  else if(curr.indx == 26)
+  {
+    print("I'm in Elseif")
+    print(curr.indx)
+    class.two = input.features[1:(start.index-1) , 1:144]
+  }
+  else
+  {
+    print("I'm in else")
+    print(curr.indx)
+    sub1 = input.features[1:(start.index-1) , 1:144] # for data before class one in main matrix
+    sub2 = input.features[(end.index+1):182 , 1:144] # for data after class one in main matrix
+    class.two = rbind(sub1 ,sub2)
+  }
+  n2 = 175 # cound of points in class 2
+  #--------------- calculate m1 , m2 -------------------
+  
+}
+# Remove initial w.matrix row and w.node
+w.matrix = w.matrix[2:27,1:144]   # dim(26 x 144)
+dim(w.matrix)
+w.node.matrix = as.matrix(w.node.matrix[2:27,1:1]) # dim( 26 x 1 )
+dim(w.node.matrix)
+# ---------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
