@@ -2,7 +2,6 @@
 # that can recognize scanned images of the 26 lower-case characters
 library(jpeg)
 library(MASS)
-library(plotly)
 # Step 1 :
 #--------- Load training & Testing data----------------------
 # each character have 7 images and 144 pixel(feature)
